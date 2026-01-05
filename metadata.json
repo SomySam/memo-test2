@@ -1,0 +1,5 @@
+{
+  "name": "Simple Memo App",
+  "description": "A clean and functional memo application with Firebase integration, featuring a warm aesthetic, user authentication, and memo management.",
+  "requestFramePermissions": []
+}
