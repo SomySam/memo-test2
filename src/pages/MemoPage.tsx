@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Plus, MessageSquare, ArrowUpDown } from 'lucide-react';
 import Modal from '@/components/Modal';
 import Button from '@/components/atoms/Button';
@@ -55,17 +55,17 @@ const MemoPage: React.FC = () => {
     }
   };
 
-  const startEditing = (id: string, content: string) => {
+  const startEditing = useCallback((id: string, content: string) => {
     setEditingId(id);
     setEditText(content);
-  };
+  }, []);
 
-  const cancelEditing = () => {
+  const cancelEditing = useCallback(() => {
     setEditingId(null);
     setEditText('');
-  };
+  }, []);
 
-  const handleUpdateMemo = async (id: string) => {
+  const handleUpdateMemo = useCallback(async (id: string) => {
     if (!validateMemoContent(editText) || updateMemoMutation.isPending) return;
 
     try {
@@ -80,9 +80,9 @@ const MemoPage: React.FC = () => {
         type: 'error',
       });
     }
-  };
+  }, [editText, updateMemoMutation, openModal]);
 
-  const handleDeleteMemo = (id: string) => {
+  const handleDeleteMemo = useCallback((id: string) => {
     openModal({
       title: '메모 삭제',
       message: '이 메모를 삭제하시겠습니까?',
@@ -103,13 +103,13 @@ const MemoPage: React.FC = () => {
         }
       },
     });
-  };
+  }, [deleteMemoMutation, openModal, closeModal]);
 
-  const toggleSortOrder = () => {
+  const toggleSortOrder = useCallback(() => {
     setSortOrder((prev) =>
       prev === SORT_OPTIONS.NEWEST_FIRST ? SORT_OPTIONS.OLDEST_FIRST : SORT_OPTIONS.NEWEST_FIRST
     );
-  };
+  }, []);
 
   return (
     <div className="p-5 space-y-8 bg-[#fdfaf1] min-h-full">

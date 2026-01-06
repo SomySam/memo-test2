@@ -10,7 +10,7 @@ import {
   updateDoc,
   onSnapshot,
 } from 'firebase/firestore';
-import { db } from '@/config/firebase';
+import { db, auth } from '@/config/firebase';
 import { Memo } from '@/types';
 import { COLLECTIONS, SortOption, SORT_OPTIONS } from '@/constants';
 import { useEffect } from 'react';
@@ -34,7 +34,10 @@ const fetchMemos = async (userEmail: string, sortOrder: SortOption): Promise<Mem
 };
 
 // 실시간 구독을 위한 훅
-export const useMemos = (userEmail: string | null, sortOrder: SortOption = SORT_OPTIONS.NEWEST_FIRST) => {
+export const useMemos = (
+  userEmail: string | null,
+  sortOrder: SortOption = SORT_OPTIONS.NEWEST_FIRST
+) => {
   const queryClient = useQueryClient();
 
   // 초기 데이터 로드 (useQuery)
@@ -83,7 +86,7 @@ export const useAddMemo = (userEmail: string | null) => {
       const docRef = await addDoc(userMemoCollectionRef, {
         content: content.trim(),
         createdAt: Date.now(),
-        userId: userEmail,
+        userId: auth.currentUser?.uid || '',
       });
 
       return docRef.id;

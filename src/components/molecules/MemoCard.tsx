@@ -27,8 +27,7 @@ const MemoCard: React.FC<MemoCardProps> = ({
   onSaveEdit,
   onCancelEdit,
   onEditTextChange,
-}) => {
-  return (
+}) => (
     <div className="bg-white rounded-[24px] shadow-sm p-5 border border-white hover:shadow-md transition-all group animate-in fade-in slide-in-from-bottom-2">
       {isEditing ? (
         <div className="mb-4">
@@ -98,7 +97,6 @@ const MemoCard: React.FC<MemoCardProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+);
 
-export default MemoCard;
+export default React.memo(MemoCard);

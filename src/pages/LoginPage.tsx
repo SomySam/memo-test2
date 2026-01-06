@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, User as UserIcon } from 'lucide-react';
 import { auth, db } from '@/config/firebase';
@@ -141,7 +141,7 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = useCallback(async () => {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
@@ -173,14 +173,14 @@ const LoginPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate, openModal]);
 
-  const handleModeSwitch = () => {
-    setIsLogin(!isLogin);
+  const handleModeSwitch = useCallback(() => {
+    setIsLogin((prev) => !prev);
     setEmailError('');
     setPasswordError('');
     closeModal();
-  };
+  }, [closeModal]);
 
   return (
     <div
