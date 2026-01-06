@@ -14,7 +14,7 @@ import {
   setPersistence,
   browserLocalPersistence,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import Modal from '@/components/Modal';
 import { useModalStore } from '@/stores/modalStore';
 import { COLLECTIONS, ERROR_MESSAGES, ROUTES, UI_CONSTANTS } from '@/constants';
@@ -76,41 +76,44 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     try {
       if (isLogin) {
-        const userDocRef = doc(db, COLLECTIONS.USERS, finalEmail);
-        const userSnap = await getDoc(userDocRef);
-
-        if (!userSnap.exists()) {
-          openModal({
-            title: '가입된 계정 없음',
-            message: `입력하신 이메일(${finalEmail})은\n아직 회원이 아닙니다.\n회원가입 페이지로 이동할까요?`,
-            type: 'confirm',
-            primaryLabel: '회원가입 하기',
-            secondaryLabel: '취소',
-            onPrimaryAction: () => {
-              setIsLogin(false);
-              closeModal();
-            },
-          });
-
-          setLoading(false);
-          return;
-        }
-
         try {
           await setPersistence(auth, browserLocalPersistence);
           await signInWithEmailAndPassword(auth, finalEmail, password);
           navigate(ROUTES.MEMO);
         } catch (authError) {
           logError('Sign In', authError);
-          openModal({
-            title: '로그인 실패',
-            message: ERROR_MESSAGES.AUTH.PASSWORD_MISMATCH + '\n다시 한번 확인해 주세요.',
-            type: 'error',
-            primaryLabel: '다시 시도',
-            onPrimaryAction: closeModal,
-          });
+          const errorCode = parseFirebaseError(authError);
 
-          startCountdown(UI_CONSTANTS.AUTO_CLOSE_COUNTDOWN_SECONDS, () => {});
+          if (errorCode === 'auth/user-not-found') {
+            openModal({
+              title: '가입된 계정 없음',
+              message: `입력하신 이메일(${finalEmail})은\n아직 회원이 아닙니다.\n회원가입 페이지로 이동할까요?`,
+              type: 'confirm',
+              primaryLabel: '회원가입 하기',
+              secondaryLabel: '취소',
+              onPrimaryAction: () => {
+                setIsLogin(false);
+                closeModal();
+              },
+            });
+          } else if (errorCode === 'auth/wrong-password' || errorCode === 'auth/invalid-credential') {
+            openModal({
+              title: '로그인 실패',
+              message: ERROR_MESSAGES.AUTH.PASSWORD_MISMATCH + '\n다시 한번 확인해 주세요.',
+              type: 'error',
+              primaryLabel: '다시 시도',
+              onPrimaryAction: closeModal,
+            });
+            startCountdown(UI_CONSTANTS.AUTO_CLOSE_COUNTDOWN_SECONDS, () => {});
+          } else {
+            openModal({
+              title: '로그인 실패',
+              message: '로그인 중 오류가 발생했습니다.\n다시 시도해 주세요.',
+              type: 'error',
+              primaryLabel: '다시 시도',
+              onPrimaryAction: closeModal,
+            });
+          }
         }
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, finalEmail, password);
