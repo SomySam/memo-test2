@@ -13,10 +13,26 @@
         "allowJs": true,
         "jsx": "react-jsx",
         "paths": {
-            "@/*": ["./*"]
+            "@/*": ["./src/*"]
         },
         "allowImportingTsExtensions": true,
-        "noEmit": true
+        "noEmit": true,
+
+        /* 타입 안전성 강화 */
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true
     },
-    "include": ["vite-env.d.ts"]
+    "include": [
+        "src/**/*",
+        "vite-env.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
 }
