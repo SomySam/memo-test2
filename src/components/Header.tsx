@@ -19,7 +19,7 @@ const Header: React.FC = () => {
             >
                 <div className="p-1.5 rounded-xl shadow-inner">
                     <img
-                        src="/public/logo.png"
+                        src="/logo.png"
                         alt="MEMO Logo"
                         className="w-9 h-9"
                     />

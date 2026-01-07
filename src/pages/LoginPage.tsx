@@ -10,7 +10,8 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   setPersistence,
   browserLocalPersistence,
 } from 'firebase/auth';
@@ -144,39 +145,41 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const handleGoogleSignIn = useCallback(async () => {
-    setLoading(true);
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-
-      if (result.user.email) {
-        await setDoc(
-          doc(db, COLLECTIONS.USERS, result.user.email),
-          {
-            uid: result.user.uid,
-            email: result.user.email,
-            nickname: result.user.displayName || result.user.email.split('@')[0],
-            lastLogin: serverTimestamp(),
-          },
-          { merge: true }
-        );
-      }
-      navigate(ROUTES.MEMO);
-    } catch (error) {
-      const errorCode = parseFirebaseError(error);
-      if (errorCode !== 'auth/popup-closed-by-user') {
-        logError('Google Sign In', error);
+  // 리다이렉트 결과 처리
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user?.email) {
+          await setDoc(
+            doc(db, COLLECTIONS.USERS, result.user.email),
+            {
+              uid: result.user.uid,
+              email: result.user.email,
+              nickname: result.user.displayName || result.user.email.split('@')[0],
+              lastLogin: serverTimestamp(),
+            },
+            { merge: true }
+          );
+          navigate(ROUTES.MEMO);
+        }
+      } catch (error) {
+        logError('Google Redirect Result', error);
         openModal({
           title: '구글 로그인 실패',
-          message: '로그인 팝업이 차단되었거나 취소되었습니다.',
+          message: '로그인 중 오류가 발생했습니다.',
           type: 'error',
         });
       }
-    } finally {
-      setLoading(false);
-    }
+    };
+    handleRedirectResult();
   }, [navigate, openModal]);
+
+  const handleGoogleSignIn = useCallback(() => {
+    setLoading(true);
+    const provider = new GoogleAuthProvider();
+    signInWithRedirect(auth, provider);
+  }, []);
 
   const handleModeSwitch = useCallback(() => {
     setIsLogin((prev) => !prev);
@@ -189,7 +192,7 @@ const LoginPage: React.FC = () => {
     <div
       className="relative flex flex-col bg-[#F8F3E0]"
       style={{
-        backgroundImage: "url('/public/bg_image2.png')",
+        backgroundImage: "url('/bg_image2.png')",
         backgroundPosition: '0 130%',
         backgroundSize: '100% auto',
         backgroundRepeat: 'no-repeat',
@@ -212,7 +215,7 @@ const LoginPage: React.FC = () => {
         <div className="mb-10 text-center">
           <div className="relative inline-block">
             <img
-              src="/public/logo.png"
+              src="/logo.png"
               alt="Memo Logo"
               className="w-28 h-28 opacity-90 object-contain"
               style={{ mixBlendMode: 'multiply' }}
@@ -285,7 +288,7 @@ const LoginPage: React.FC = () => {
           fullWidth
           icon={
             <img
-              src="/public/Logo-google-icon-PNG.png"
+              src="/Logo-google-icon-PNG.png"
               alt=""
               className="w-5 h-5"
               aria-hidden="true"
