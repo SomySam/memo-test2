@@ -97,7 +97,10 @@ const LoginPage: React.FC = () => {
                 closeModal();
               },
             });
-          } else if (errorCode === 'auth/wrong-password' || errorCode === 'auth/invalid-credential') {
+          } else if (
+            errorCode === 'auth/wrong-password' ||
+            errorCode === 'auth/invalid-credential'
+          ) {
             openModal({
               title: '로그인 실패',
               message: ERROR_MESSAGES.AUTH.PASSWORD_MISMATCH + '\n다시 한번 확인해 주세요.',
@@ -287,16 +290,11 @@ const LoginPage: React.FC = () => {
           size="md"
           fullWidth
           icon={
-            <img
-              src="/Logo-google-icon-PNG.png"
-              alt=""
-              className="w-5 h-5"
-              aria-hidden="true"
-            />
+            <img src="/Logo-google-icon-PNG.png" alt="" className="w-5 h-5" aria-hidden="true" />
           }
           aria-label="Google로 로그인"
         >
-          Google로 로그인
+          Google로 로그인 ^^
         </Button>
       </div>
 
