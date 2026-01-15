@@ -10,6 +10,9 @@
       "Bash(mkdir:*)",
       "Bash(cat:*)",
       "Bash(firebase --version:*)"
+    ],
+    "additionalDirectories": [
+      "f:\\memo-test2-main"
     ]
   }
 }

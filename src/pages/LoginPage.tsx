@@ -10,8 +10,7 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   setPersistence,
   browserLocalPersistence,
 } from 'firebase/auth';
@@ -148,41 +147,36 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  // 리다이렉트 결과 처리
-  useEffect(() => {
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result?.user?.email) {
-          await setDoc(
-            doc(db, COLLECTIONS.USERS, result.user.email),
-            {
-              uid: result.user.uid,
-              email: result.user.email,
-              nickname: result.user.displayName || result.user.email.split('@')[0],
-              lastLogin: serverTimestamp(),
-            },
-            { merge: true }
-          );
-          navigate(ROUTES.MEMO);
-        }
-      } catch (error) {
-        logError('Google Redirect Result', error);
-        openModal({
-          title: '구글 로그인 실패',
-          message: '로그인 중 오류가 발생했습니다.',
-          type: 'error',
-        });
-      }
-    };
-    handleRedirectResult();
-  }, [navigate, openModal]);
-
-  const handleGoogleSignIn = useCallback(() => {
+  const handleGoogleSignIn = useCallback(async () => {
     setLoading(true);
-    const provider = new GoogleAuthProvider();
-    signInWithRedirect(auth, provider);
-  }, []);
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+
+      if (result.user?.email) {
+        await setDoc(
+          doc(db, COLLECTIONS.USERS, result.user.email),
+          {
+            uid: result.user.uid,
+            email: result.user.email,
+            nickname: result.user.displayName || result.user.email.split('@')[0],
+            lastLogin: serverTimestamp(),
+          },
+          { merge: true }
+        );
+        navigate(ROUTES.MEMO);
+      }
+    } catch (error) {
+      logError('Google Sign In', error);
+      openModal({
+        title: '구글 로그인 실패',
+        message: '로그인 중 오류가 발생했습니다.\n다시 시도해 주세요.',
+        type: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate, openModal]);
 
   const handleModeSwitch = useCallback(() => {
     setIsLogin((prev) => !prev);
