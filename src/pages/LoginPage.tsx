@@ -150,7 +150,15 @@ const LoginPage: React.FC = () => {
   const handleGoogleSignIn = useCallback(async () => {
     setLoading(true);
     try {
+      // 기존 세션 정리
+      if (auth.currentUser) {
+        await auth.signOut();
+      }
+
       const provider = new GoogleAuthProvider();
+      // 매번 계정 선택 화면 표시
+      provider.setCustomParameters({ prompt: 'select_account' });
+
       const result = await signInWithPopup(auth, provider);
 
       if (result.user?.email) {
@@ -166,8 +174,20 @@ const LoginPage: React.FC = () => {
         );
         navigate(ROUTES.MEMO);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logError('Google Sign In', error);
+
+      const firebaseError = error as { code?: string };
+
+      // 팝업 닫힘/취소는 무시
+      if (
+        firebaseError.code === 'auth/popup-closed-by-user' ||
+        firebaseError.code === 'auth/cancelled-popup-request'
+      ) {
+        setLoading(false);
+        return;
+      }
+
       openModal({
         title: '구글 로그인 실패',
         message: '로그인 중 오류가 발생했습니다.\n다시 시도해 주세요.',
